@@ -24,12 +24,13 @@ public class PanelJdbcTemplateRepository implements PanelRepository {
     // 1. Create a single mapper for all find methods.
     private final RowMapper<Panel> mapper = (resultSet, rowNum) -> {
         Panel panel = new Panel();
+        panel.setPanelId(resultSet.getInt("panel_id"));
         panel.setSection(resultSet.getString("section"));
         panel.setRow(resultSet.getInt("row_num"));
         panel.setCol(resultSet.getInt("col_num"));
         panel.setYearInstalled(resultSet.getInt("year_installed"));
         panel.setType(resultSet.getInt("panel_type_id"));
-        panel.setTracking(resultSet.getBoolean("is_tracking"));
+        panel.setTracked(resultSet.getBoolean("is_tracking"));
         return panel;
     };
 
@@ -76,7 +77,7 @@ public class PanelJdbcTemplateRepository implements PanelRepository {
             ps.setInt(3, panel.getCol());
             ps.setInt(4, panel.getYearInstalled());
             ps.setInt(5, panel.getType());
-            ps.setBoolean(6,panel.isTracking());
+            ps.setBoolean(6,panel.getTracked());
             return ps;
         }, keyHolder);
 

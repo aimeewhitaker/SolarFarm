@@ -14,6 +14,7 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="SolarFarm" options="-parameters" />
       <module name="SolarFarm_Web" options="-parameters" />
     </option>
   </component>

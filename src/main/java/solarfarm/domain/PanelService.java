@@ -4,8 +4,14 @@ package solarfarm.domain;
 import org.springframework.stereotype.Service;
 import solarfarm.data.PanelRepository;
 import solarfarm.model.Panel;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class PanelService {
@@ -21,77 +27,48 @@ public class PanelService {
     }
 
     public Result<Panel> add(Panel panel){
-        Result result = validateInputs(panel);
-        if (result.getType() != ResultType.SUCCESS) {
-            return result;
-        }
+        Result<Panel> result = new Result<>();
 
-        //check for duplicate s
-        result = validateLocation(panel);
-        if (result.getType() != ResultType.SUCCESS) {
-            return result;
-        }
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        Set<ConstraintViolation<Panel>> violations = validator.validate(panel);
 
-        Panel p = repository.add(panel);
-        result.setPayload(p);
-        return result;
-    }
-
-    private Result<Panel> validateInputs(Panel panel){
-        Result result = new Result();
-        if (panel == null) {
-            result.addMessage("Panel cannot be null", ResultType.NOT_FOUND);
-            return result;
-        }
-
-        if (panel.getRow()  < 0 || panel.getRow() > 250
-                || panel.getCol() < 0 || panel.getCol() > 250) {
-            result.addMessage("Panel must be in col/row between 0 and 250", ResultType.INVALID);
-        }
-
-        if (panel.getSection() == null || panel.getSection().length() == 0) {
-            result.addMessage("Section must have a name", ResultType.INVALID);
-        }
-
-        if (panel.getYearInstalled() > 2020) {
-            result.addMessage("Panel must be placed in the past", ResultType.INVALID);
-        }
-        return result;
-    }
-
-    private Result validateLocation(Panel panel){
-        Result result = new Result();
-
-        List<Panel> allPanels = repository.findAll();
-
-        for (Panel p : allPanels) {
-            if (p.getRow() == panel.getRow() && panel.getCol() == p.getCol()
-            && p.getSection().equals(panel.getSection())) {
-                result.addMessage("Duplicate panel", ResultType.INVALID);
+        if (violations.size() > 0) {
+            for (ConstraintViolation<Panel> violation : violations) {
+                System.out.println(violation.getPropertyPath() + ": " + violation.getMessage());
             }
+            result.addMessage("Uh this didn't work", ResultType.INVALID);
+        } else {
+            Panel p = repository.add(panel);
+            result.setPayload(p);
+            return result;
         }
         return result;
     }
+
 
     //can not change location of panel
-    public Result update(Panel panel) {
-        Result result = validateInputs(panel);
-        if (result.getType() != ResultType.SUCCESS) {
-            return result;
-        }
-        Panel existing = repository.findById(panel.getPanelId());
-        if (existing == null) {
-            result.addMessage("Panel Id " + panel.getPanelId() + " not found.", ResultType.NOT_FOUND);
-            return result;
-        }
-//        if (!(existing.getSection().equals(panel.getSection())) || existing.getCol() != panel.getRow()
-//            || existing.getCol() != panel.getCol()) {
-//            result.addErrorMessage("Cannot update location of panel.");
-//            return result;
-//        }
-        boolean success = repository.update(panel);
-        if (!success) {
-            result.addMessage("Could not update.", ResultType.INVALID);
+    public Result<Panel> update(Panel panel) {
+        Result<Panel> result = new Result<>();
+
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        Set<ConstraintViolation<Panel>> violations = validator.validate(panel);
+
+        if (violations.size() > 0) {
+            for (ConstraintViolation<Panel> violation : violations) {
+                System.out.println(violation.getPropertyPath() + ": " + violation.getMessage());
+            }
+            result.addMessage("Uh this didn't work", ResultType.INVALID);
+        } else {
+            Panel existing = repository.findById(panel.getPanelId());
+            if (existing != null) {
+                boolean success = repository.update(panel);
+                if (success) {
+                    return result;
+                }
+                result.addMessage("Uh oh", ResultType.INVALID);
+            }
         }
         return result;
     }

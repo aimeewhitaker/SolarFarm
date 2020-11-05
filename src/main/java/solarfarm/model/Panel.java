@@ -1,16 +1,34 @@
 package solarfarm.model;
 
-import java.util.Arrays;
+import javax.validation.constraints.*;
 
 public class Panel {
 
+    @NotNull
     private int panelId;
+
+    @NotBlank(message = "Section name is required.")
+    @Size(max = 50, message = "Section name cannot be greater than 50 characters.")
     private String section;
+
+    @Min(value = 1, message = "Row must be between 1 and 250.")
+    @Max(value = 250, message = "Row must be between 1 and 250.")
     private int row;
+
+    @Min(value = 1, message = "Col must be between 1 and 250.")
+    @Max(value = 250, message = "Col must be between 1 and 250.")
     private int col;
+
+    @Min(value = 1900, message = "Year installed must be in the past.")
+    @Max(value = 2020, message = "Year installed must be in the past.")
     private int yearInstalled;
+
+    @Min(value = 0, message = "Type must be between 0 and 5.")
+    @Max(value = 5, message = "Type must be between 0 and 5.")
     private int type;
-    boolean isTracking;
+
+    @NotNull
+    private boolean tracked;
 
     public Panel(String section, int row, int col, int yearInstalled, int type, boolean isTracking) {
         this.section = section;
@@ -18,7 +36,7 @@ public class Panel {
         this.col = col;
         this.yearInstalled = yearInstalled;
         this.type = type;
-        this.isTracking = isTracking;
+        this.tracked = isTracking;
     }
 
     public Panel() {
@@ -70,11 +88,11 @@ public class Panel {
         this.type = type;
     }
 
-    public boolean isTracking() {
-        return isTracking;
+    public boolean getTracked() {
+        return tracked;
     }
 
-    public void setTracking(boolean tracking) {
-        isTracking = tracking;
+    public void setTracked(boolean tracked) {
+        this.tracked = tracked;
     }
 }
